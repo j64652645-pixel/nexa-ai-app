@@ -1,0 +1,25 @@
+{
+    "baseline_done": true,
+    "topic_strength": {
+        "linear equations": 0.6,
+        "algebra": 0.7,
+        "ratio": 0.7,
+        "cells": 0.7,
+        "photosynthesis": 0.7,
+        "respiration": 0.7,
+        "states of matter": 0.7,
+        "separation of mixtures": 0.7,
+        "force": 0.7,
+        "energy": 0.7,
+        "motion": 0.7,
+        "weather": 0.7,
+        "climate": 0.7
+    },
+    "mistakes": {
+        "linear equations": 1
+    },
+    "study_log": {
+        "linear equations": 1770593096.3213224
+    },
+    "reflections": []
+}

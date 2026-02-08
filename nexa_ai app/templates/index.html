@@ -1,0 +1,420 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="nav-menu">
+    <button class="nav-btn active" onclick="showSection('home')">🏠 Home</button>
+    <button class="nav-btn" onclick="showSection('baseline')">📋 Baseline</button>
+    <button class="nav-btn" onclick="showSection('dashboard')">📊 Dashboard</button>
+    <button class="nav-btn" onclick="showSection('quiz')">🎯 Quiz</button>
+    <button class="nav-btn" onclick="showSection('study-plan')">🗓 Study Plan</button>
+    <button class="nav-btn" onclick="showSection('exam')">📈 Exam Predict</button>
+    <button class="nav-btn" onclick="showSection('explain')">💡 Explain</button>
+    <button class="nav-btn" onclick="showSection('reflection')">📝 Journal</button>
+</div>
+
+<!-- HOME SECTION -->
+<section id="home" class="section active">
+    <h2>🎓 Welcome to NEXA AI</h2>
+    <p style="margin: 15px 0; line-height: 1.6;">
+        NEXA AI is an intelligent revision platform designed for Grade 9 students. 
+        It combines offline-first technology with optional online AI assistance to help you learn smarter, not harder.
+    </p>
+    
+    <div class="stats">
+        <div class="stat-box">
+            <h3>📚</h3>
+            <p>5 Subjects</p>
+        </div>
+        <div class="stat-box">
+            <h3>15+</h3>
+            <p>Topics</p>
+        </div>
+        <div class="stat-box">
+            <h3>🔄</h3>
+            <p>Smart Learning</p>
+        </div>
+        <div class="stat-box">
+            <h3>🧠</h3>
+            <p>AI-Powered</p>
+        </div>
+    </div>
+
+    <h3 style="color: #667eea; margin-top: 30px;">✨ Key Features</h3>
+    <ul style="margin: 15px 0; line-height: 2;">
+        <li>✅ <strong>Baseline Assessment</strong> - Gauge your initial knowledge</li>
+        <li>✅ <strong>Personalized Study Plan</strong> - Focus on your weak areas</li>
+        <li>✅ <strong>Adaptive Quiz</strong> - Questions match your level</li>
+        <li>✅ <strong>Forgetting Curve</strong> - Predicts when you'll forget topics</li>
+        <li>✅ <strong>Offline/Online Mode</strong> - Works anywhere, anytime</li>
+        <li>✅ <strong>Reflection Journal</strong> - Track your learning journey</li>
+    </ul>
+
+    <h3 style="color: #667eea; margin-top: 30px;">🚀 Get Started</h3>
+    <p style="margin: 15px 0;">
+        Complete the baseline assessment to get personalized recommendations, or explore any feature above!
+    </p>
+</section>
+
+<!-- BASELINE SECTION -->
+<section id="baseline" class="section">
+    <h2>📋 Baseline Assessment</h2>
+    <p style="margin: 15px 0;">Answer questions across all subjects to establish your baseline knowledge.</p>
+    
+    <div id="baseline-form">
+        <!-- Dynamically populated -->
+    </div>
+</section>
+
+<!-- DASHBOARD SECTION -->
+<section id="dashboard" class="section">
+    <h2>📊 Dashboard</h2>
+    <p style="margin: 15px 0;">Your progress across all topics</p>
+    
+    <div id="dashboard-content">
+        <div class="loading"><div class="spinner"></div></div>
+    </div>
+</section>
+
+<!-- QUIZ SECTION -->
+<section id="quiz" class="section">
+    <h2>🎯 Adaptive Quiz</h2>
+    <p style="margin: 15px 0;">Test your knowledge on your weakest topic</p>
+    
+    <div id="quiz-content">
+        <div class="form-group">
+            <label for="quiz-topic">Select Topic:</label>
+            <select id="quiz-topic">
+                <option value="">Loading topics...</option>
+            </select>
+        </div>
+        
+        <div class="form-group">
+            <label for="quiz-answer">Your Answer:</label>
+            <textarea id="quiz-answer" placeholder="Type your answer here..."></textarea>
+        </div>
+        
+        <button onclick="submitQuiz()">Submit Answer</button>
+        
+        <div id="quiz-result" style="margin-top: 20px;"></div>
+    </div>
+</section>
+
+<!-- STUDY PLAN SECTION -->
+<section id="study-plan" class="section">
+    <h2>🗓 Personalized Study Plan</h2>
+    <p style="margin: 15px 0;">Topics ranked by your weakness - focus on these areas!</p>
+    
+    <div id="study-plan-content">
+        <div class="loading"><div class="spinner"></div></div>
+    </div>
+</section>
+
+<!-- EXAM PREDICTOR SECTION -->
+<section id="exam" class="section">
+    <h2>📈 Likely Exam Topics</h2>
+    <p style="margin: 15px 0;">Based on your learning patterns, here are likely exam focus areas:</p>
+    
+    <div id="exam-content">
+        <div class="loading"><div class="spinner"></div></div>
+    </div>
+</section>
+
+<!-- EXPLAIN SECTION -->
+<section id="explain" class="section">
+    <h2>💡 Topic Explainer</h2>
+    <p style="margin: 15px 0;">Get explanations in offline or online mode</p>
+    
+    <div class="form-group">
+        <label for="explain-topic">Enter Topic:</label>
+        <input type="text" id="explain-topic" placeholder="e.g., photosynthesis, force, algebra...">
+    </div>
+    
+    <button onclick="explainTopic()">Get Explanation</button>
+    
+    <div id="explain-result" style="margin-top: 20px;"></div>
+</section>
+
+<!-- REFLECTION SECTION -->
+<section id="reflection" class="section">
+    <h2>📝 Reflection Journal</h2>
+    <p style="margin: 15px 0;">What was difficult today? Reflect on your learning.</p>
+    
+    <div class="form-group">
+        <label for="reflection-entry">Your Reflection:</label>
+        <textarea id="reflection-entry" placeholder="Write what you found challenging..."></textarea>
+    </div>
+    
+    <button onclick="saveReflection()">Save Reflection</button>
+    
+    <div id="reflection-list" style="margin-top: 30px;">
+        <h3>📚 Your Reflections</h3>
+        <div id="reflections-content"></div>
+    </div>
+</section>
+
+{% endblock %}
+
+{% block scripts %}
+<script>
+    // Load baseline form
+    function loadBaseline() {
+        fetch('/api/topics')
+            .then(r => r.json())
+            .then(data => {
+                let html = '';
+                for (const [subject, topics] of Object.entries(data.topics)) {
+                    html += `<h3 style="color: #667eea; margin-top: 20px;">${subject.toUpperCase()}</h3>`;
+                    for (const topic of topics) {
+                        html += `
+                            <div class="form-group">
+                                <label>${topic}</label>
+                                <textarea class="baseline-input" data-topic="${topic}" 
+                                    placeholder="What do you know about ${topic}?"></textarea>
+                            </div>
+                        `;
+                    }
+                }
+                html += '<button onclick="submitBaseline()">Complete Baseline</button>';
+                document.getElementById('baseline-form').innerHTML = html;
+            });
+    }
+
+    function submitBaseline() {
+        const answers = {};
+        document.querySelectorAll('.baseline-input').forEach(input => {
+            answers[input.dataset.topic] = input.value;
+        });
+
+        fetch('/api/baseline', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ answers })
+        })
+        .then(r => r.json())
+        .then(data => {
+            if (data.status === 'success') {
+                showMessage('✅ ' + data.message, 'success');
+                updateReadinessScore();
+                setTimeout(() => location.reload(), 1500);
+            } else {
+                showMessage('❌ ' + data.message, 'error');
+            }
+        });
+    }
+
+    // Load and refresh dashboard
+    function loadDashboard() {
+        fetch('/api/dashboard')
+            .then(r => r.json())
+            .then(data => {
+                if (data.status === 'success') {
+                    let html = `<div class="stats">
+                        <div class="stat-box">
+                            <h3>${data.data.readiness_score}%</h3>
+                            <p>Readiness Score</p>
+                        </div>
+                        <div class="stat-box">
+                            <h3>${data.data.topics.length}</h3>
+                            <p>Topics Tracked</p>
+                        </div>
+                        <div class="stat-box">
+                            <h3>${data.data.online ? '🌐' : '📴'}</h3>
+                            <p>${data.data.online ? 'Online' : 'Offline'} Mode</p>
+                        </div>
+                    </div>`;
+                    
+                    html += '<h3 style="margin-top: 30px;">Topic Progress</h3>';
+                    for (const topic of data.data.topics) {
+                        const strength = topic.strength;
+                        let badge = 'low';
+                        if (strength >= 0.7) badge = 'strong';
+                        else if (strength >= 0.4) badge = 'medium';
+                        else badge = 'weak';
+
+                        html += `
+                            <div class="card ${badge}">
+                                <div class="flex">
+                                    <strong>${topic.topic}</strong>
+                                    <span><strong>${Math.round(strength * 100)}%</strong></span>
+                                </div>
+                                <div class="progress-bar">
+                                    <div class="progress-fill" style="width: ${strength * 100}%"></div>
+                                </div>
+                                <div style="font-size: 0.9em; color: #666; margin-top: 5px;">
+                                    Strength: ${strength.toFixed(2)} | Retention: ${topic.retention} | Mistakes: ${topic.mistakes}
+                                </div>
+                            </div>
+                        `;
+                    }
+                    document.getElementById('dashboard-content').innerHTML = html;
+                }
+            });
+    }
+
+    // Load study plan
+    function loadStudyPlan() {
+        fetch('/api/study-plan')
+            .then(r => r.json())
+            .then(data => {
+                if (data.status === 'success') {
+                    let html = '<div class="stats" style="margin-bottom: 20px;">';
+                    for (const item of data.data) {
+                        let color = 'low';
+                        if (item.priority === 'High') color = 'high';
+                        else if (item.priority === 'Medium') color = 'medium';
+
+                        html += `
+                            <div class="card">
+                                <strong>${item.topic}</strong>
+                                <span class="difficulty-badge ${color.toLowerCase()}">${item.priority}</span>
+                                <div style="margin-top: 10px; font-size: 0.9em;">
+                                    Strength: ${item.strength} | Retention: ${item.retention}
+                                </div>
+                            </div>
+                        `;
+                    }
+                    html += '</div>';
+                    document.getElementById('study-plan-content').innerHTML = html;
+                } else {
+                    document.getElementById('study-plan-content').innerHTML = '<div class="message error">' + data.message + '</div>';
+                }
+            });
+    }
+
+    // Load exam predictor
+    function loadExamPredictor() {
+        fetch('/api/exam-predictor')
+            .then(r => r.json())
+            .then(data => {
+                if (data.status === 'success') {
+                    let html = '<ol style="margin: 20px;">';
+                    for (let i = 0; i < data.data.length; i++) {
+                        html += `<li style="margin: 10px 0; font-size: 1.1em; color: #667eea;"><strong>${data.data[i]}</strong></li>`;
+                    }
+                    html += '</ol>';
+                    html += '<p style="margin-top: 20px; color: #666;">These topics are most likely to appear on exams. Focus your study here!</p>';
+                    document.getElementById('exam-content').innerHTML = html;
+                } else {
+                    document.getElementById('exam-content').innerHTML = '<div class="message error">' + data.message + '</div>';
+                }
+            });
+    }
+
+    // Load quiz topics
+    function loadQuizTopics() {
+        fetch('/api/topics')
+            .then(r => r.json())
+            .then(data => {
+                let html = '<option value="">Select a topic...</option>';
+                for (const topics of Object.values(data.topics)) {
+                    for (const topic of topics) {
+                        html += `<option value="${topic}">${topic}</option>`;
+                    }
+                }
+                document.getElementById('quiz-topic').innerHTML = html;
+            });
+    }
+
+    // Submit quiz answer
+    function submitQuiz() {
+        const topic = document.getElementById('quiz-topic').value;
+        const answer = document.getElementById('quiz-answer').value;
+
+        if (!topic) {
+            showMessage('Please select a topic', 'error');
+            return;
+        }
+
+        fetch('/api/quiz', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ topic, answer })
+        })
+        .then(r => r.json())
+        .then(data => {
+            if (data.status === 'success') {
+                const resultDiv = document.getElementById('quiz-result');
+                resultDiv.innerHTML = `
+                    <div class="message ${data.correct ? 'success' : 'info'}">
+                        ${data.explanation}
+                    </div>
+                `;
+                updateReadinessScore();
+                document.getElementById('quiz-answer').value = '';
+            }
+        });
+    }
+
+    // Explain topic
+    function explainTopic() {
+        const topic = document.getElementById('explain-topic').value.trim();
+
+        if (!topic) {
+            showMessage('Please enter a topic', 'error');
+            return;
+        }
+
+        fetch('/api/explain', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ topic })
+        })
+        .then(r => r.json())
+        .then(data => {
+            if (data.status === 'success') {
+                document.getElementById('explain-result').innerHTML = `
+                    <div class="card">
+                        <strong>${data.online ? '🌐 Online Explanation' : '📴 Offline Explanation'}</strong>
+                        <p style="margin-top: 10px;">${data.explanation}</p>
+                    </div>
+                `;
+            } else {
+                showMessage(data.message, 'error');
+            }
+        });
+    }
+
+    // Save reflection
+    function saveReflection() {
+        const entry = document.getElementById('reflection-entry').value.trim();
+
+        if (!entry) {
+            showMessage('Please write a reflection', 'error');
+            return;
+        }
+
+        fetch('/api/reflection', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ entry })
+        })
+        .then(r => r.json())
+        .then(data => {
+            if (data.status === 'success') {
+                showMessage(data.message, 'success');
+                document.getElementById('reflection-entry').value = '';
+            } else {
+                showMessage(data.message, 'error');
+            }
+        });
+    }
+
+    // Load on page load
+    document.addEventListener('DOMContentLoaded', () => {
+        loadBaseline();
+        loadQuizTopics();
+        loadDashboard();
+        loadStudyPlan();
+        loadExamPredictor();
+
+        // Update dashboard when section is shown
+        const original = showSection.bind(window);
+        window.showSection = function(sectionId) {
+            original.call(this, sectionId);
+            if (sectionId === 'dashboard') loadDashboard();
+            if (sectionId === 'study-plan') loadStudyPlan();
+            if (sectionId === 'exam') loadExamPredictor();
+        };
+    });
+</script>
+{% endblock %}
